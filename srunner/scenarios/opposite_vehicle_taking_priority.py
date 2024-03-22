@@ -119,13 +119,19 @@ class OppositeVehicleJunction(BasicScenario):
         self.parking_slots.append(source_transform.location)
 
         # Spawn the actor and move it below ground
+        # forcing a specific vehicle
+        # Ideally, the vehicle blueprint should be a parameter.
+        # opposite_actor = CarlaDataProvider.request_new_actor(
+        #     'vehicle.*', self._spawn_location, attribute_filter={'special_type': 'emergency'})
         opposite_actor = CarlaDataProvider.request_new_actor(
-            'vehicle.*', self._spawn_location, attribute_filter={'special_type': 'emergency'})
+            "vehicle.tesla.cybertruck", self._spawn_location)
         if not opposite_actor:
             raise Exception("Couldn't spawn the actor")
         lights = opposite_actor.get_light_state()
         lights |= self._lights
         opposite_actor.set_light_state(carla.VehicleLightState(lights))
+        # A little dirty because the index of the added actor is not kept and 
+        # index 0 is used later
         self.other_actors.append(opposite_actor)
 
         opposite_transform = carla.Transform(
