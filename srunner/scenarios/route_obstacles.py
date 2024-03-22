@@ -356,7 +356,9 @@ class ParkedObstacle(BasicScenario):
         """
         Spawns the obstacle actor by displacing its position to the right
         """
-        displacement = self._offset * wp.lane_width / 2
+        # displacement = self._offset * wp.lane_width / 2
+        # NOTE Spawn the vehicle on the relative right lane.
+        displacement = wp.lane_width
         r_vec = wp.transform.get_right_vector()
         if self._direction == 'left':
             r_vec *= -1
