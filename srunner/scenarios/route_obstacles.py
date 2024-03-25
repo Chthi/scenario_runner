@@ -82,6 +82,7 @@ class Accident(BasicScenario):
             raise ValueError(f"'direction' must be either 'right' or 'left' but {self._direction} was given")
 
         self._max_speed = get_value_parameter(config, 'speed', float, 60)
+        self._blueprint_emergency = get_value_parameter(config, 'blueprint_emergency', str, 'vehicle.*')
         self._scenario_timeout = 240
 
         super().__init__(
@@ -155,9 +156,9 @@ class Accident(BasicScenario):
         # Spawn the accident indication signal
         self._spawn_side_prop(starting_wp)
 
-        # Spawn the police vehicle
+        # Spawn the emergency vehicle
         self._accident_wp = self._move_waypoint_forward(starting_wp, self._distance)
-        police_car = self._spawn_obstacle(self._accident_wp, 'vehicle.dodge.charger_police_2020')
+        police_car = self._spawn_obstacle(self._accident_wp, self._blueprint_emergency)
 
         # Set its initial conditions
         lights = police_car.get_light_state()
@@ -300,7 +301,8 @@ class ParkedObstacle(BasicScenario):
         self._trigger_distance = 50
         self._end_distance = 50
         self._wait_duration = 5
-        self._offset = 0.7
+        # self._offset = 0.7
+        self._lane_offset = 1
 
         self._lights = carla.VehicleLightState.RightBlinker | carla.VehicleLightState.LeftBlinker | carla.VehicleLightState.Position
 
@@ -310,6 +312,7 @@ class ParkedObstacle(BasicScenario):
             raise ValueError(f"'direction' must be either 'right' or 'left' but {self._direction} was given")
 
         self._max_speed = get_value_parameter(config, 'speed', float, 60)
+        self._blueprint = get_value_parameter(config, 'blueprint', str, 'vehicle.*')
         self._scenario_timeout = 240
 
         super().__init__(
@@ -357,8 +360,8 @@ class ParkedObstacle(BasicScenario):
         Spawns the obstacle actor by displacing its position to the right
         """
         # displacement = self._offset * wp.lane_width / 2
-        # NOTE Spawn the vehicle on the relative right lane.
-        displacement = wp.lane_width
+        # Spawn the vehicle on side lanes
+        displacement = wp.lane_width * self._lane_offset
         r_vec = wp.transform.get_right_vector()
         if self._direction == 'left':
             r_vec *= -1
@@ -383,7 +386,7 @@ class ParkedObstacle(BasicScenario):
 
         # Create the first vehicle that has been in the accident
         self._vehicle_wp = self._move_waypoint_forward(self._starting_wp, self._distance)
-        parked_actor = self._spawn_obstacle(self._vehicle_wp, 'vehicle.*')
+        parked_actor = self._spawn_obstacle(self._vehicle_wp, self._blueprint)
 
         lights = parked_actor.get_light_state()
         lights |= self._lights
